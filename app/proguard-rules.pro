@@ -1,0 +1,2 @@
+-keep class com.tempmonitor.** { *; }
+-dontwarn com.topjohnwu.superuser.**
