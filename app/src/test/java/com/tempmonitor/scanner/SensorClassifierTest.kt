@@ -4,6 +4,7 @@ import com.tempmonitor.data.scanner.SensorClassifier
 import com.tempmonitor.domain.model.SensorCategory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SensorClassifierTest {
@@ -15,6 +16,15 @@ class SensorClassifierTest {
         assertEquals(SensorCategory.CPU, SensorClassifier.classify("oryon-prime"))
     }
 
+    @Test fun tripEBclNaoSaoTermometros() {
+        assertEquals(SensorCategory.UNKNOWN, SensorClassifier.classify("cpu-hw-trip-0"))
+        assertEquals(SensorCategory.UNKNOWN, SensorClassifier.classify("cpu-hw-trip-1"))
+        assertEquals(SensorCategory.UNKNOWN, SensorClassifier.classify("pmh0101-bcl-lvl0"))
+        assertEquals(SensorCategory.UNKNOWN, SensorClassifier.classify("pmih010x-ibat-lvl1"))
+        assertEquals(SensorCategory.UNKNOWN, SensorClassifier.classify("vbat"))
+        assertTrue(SensorClassifier.isMetaMetric("cpu-hw-trip-0"))
+    }
+
     @Test fun gpuNaoConfundeComCpuss() {
         assertEquals(SensorCategory.GPU, SensorClassifier.classify("gpuss-0"))
         assertEquals(SensorCategory.GPU, SensorClassifier.classify("kgsl-3d0"))
@@ -24,6 +34,7 @@ class SensorClassifierTest {
     @Test fun npuEDsp() {
         assertEquals(SensorCategory.NPU, SensorClassifier.classify("npu-0"))
         assertEquals(SensorCategory.NPU, SensorClassifier.classify("cdsp"))
+        assertEquals(SensorCategory.NPU, SensorClassifier.classify("nsphvx-0"))
         assertEquals(SensorCategory.NPU, SensorClassifier.classify("hexagon-dsp"))
     }
 
@@ -37,6 +48,19 @@ class SensorClassifierTest {
         assertEquals(SensorCategory.BATTERY, SensorClassifier.classify("bms-temp"))
         assertEquals(SensorCategory.BATTERY, SensorClassifier.classify("qualquer", fromPowerSupply = true))
         assertEquals(SensorCategory.UNKNOWN, SensorClassifier.classify("pm8550-bcl"))
+    }
+
+    @Test fun zonaCpuQualcommMantemClusterENucleo() {
+        val z = SensorClassifier.cpuZone("cpu-0-2-1")!!
+        assertEquals(0, z.cluster)
+        assertEquals(2, z.core)
+        assertEquals("1", z.sub)
+        assertEquals("CPU 0.2.1", SensorClassifier.friendlyLabel("cpu-0-2-1", SensorCategory.CPU))
+        assertEquals(1, SensorClassifier.cpuZone("cpu-1-0-0")!!.cluster)
+        assertTrue(
+            SensorClassifier.friendlyLabel("cpu-0-2-0", SensorCategory.CPU) !=
+                SensorClassifier.friendlyLabel("cpu-0-2-1", SensorCategory.CPU)
+        )
     }
 
     @Test fun indiceDeNucleoECluster() {

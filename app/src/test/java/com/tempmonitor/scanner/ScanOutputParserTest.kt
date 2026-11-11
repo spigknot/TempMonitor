@@ -5,6 +5,7 @@ import com.tempmonitor.domain.model.SensorCategory
 import com.tempmonitor.domain.model.SensorKind
 import com.tempmonitor.domain.model.TempScale
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -15,6 +16,8 @@ class ScanOutputParserTest {
         "TZ|/sys/class/thermal/thermal_zone1|cpu-1-0-usr",
         "TZ|/sys/class/thermal/thermal_zone42|gpuss-0",
         "TZ|/sys/class/thermal/thermal_zone77|cdsp",
+        "TZ|/sys/class/thermal/thermal_zone56|cpu-hw-trip-0",
+        "TZ|/sys/class/thermal/thermal_zone60|pmh0101-bcl-lvl0",
         "PSF|/sys/class/power_supply/battery/temp|battery",
         "PSF|/sys/class/power_supply/bms/cell1_temp|bms",
         "PSF|/sys/class/power_supply/battery/usb_temp|battery",
@@ -24,12 +27,26 @@ class ScanOutputParserTest {
 
     @Test fun descobreECategoriza() {
         val nodes = ScanOutputParser.parse(lines)
-        assertEquals(8, nodes.size)
+        assertEquals(10, nodes.size)
         assertEquals(2, nodes.count { it.category == SensorCategory.CPU })
         assertEquals(1, nodes.count { it.category == SensorCategory.GPU && it.kind == SensorKind.TEMP })
         assertEquals(1, nodes.count { it.category == SensorCategory.NPU })
         assertEquals(3, nodes.count { it.category == SensorCategory.BATTERY })
         assertEquals(1, nodes.count { it.kind == SensorKind.FREQ })
+        assertEquals(2, nodes.count { it.category == SensorCategory.UNKNOWN })
+    }
+
+    @Test fun tripEBclNaoEntramEmCpuNemGpu() {
+        val nodes = ScanOutputParser.parse(lines)
+        val trip = nodes.first { it.type == "cpu-hw-trip-0" }
+        assertEquals(SensorCategory.UNKNOWN, trip.category)
+        val bcl = nodes.first { it.type == "pmh0101-bcl-lvl0" }
+        assertEquals(SensorCategory.UNKNOWN, bcl.category)
+        // o pico de CPU/GPU nao pode ser sequestrado pelos 95 C do trip
+        val socTemps = nodes.filter {
+            it.category == SensorCategory.CPU || it.category == SensorCategory.GPU
+        }.map { it.type }
+        assertTrue(socTemps.none { it.contains("trip") })
     }
 
     @Test fun escalasCorretasPorOrigem() {
@@ -42,7 +59,8 @@ class ScanOutputParserTest {
     @Test fun rotulosEAgrupamentoDeCpu() {
         val nodes = ScanOutputParser.parse(lines)
         val core0 = nodes.first { it.type == "cpu-0-0-usr" }
-        assertEquals("Core 0", core0.label)
+        assertEquals("CPU 0.0.usr", core0.label)
+        assertNotNull(core0.cluster)
         val cell1 = nodes.first { it.tempPath.contains("cell1_temp") }
         assertEquals("Celula 1", cell1.label)
         val usb = nodes.first { it.tempPath.contains("usb_temp") }

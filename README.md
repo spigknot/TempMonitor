@@ -34,6 +34,14 @@ O mapeamento e cacheado em DataStore; arquivos de nos brutos podem ser
 reatribuidos manualmente na tela "Nos brutos" (o override vence a heuristica
 e sobrevive ao rescan). Unico fallback nao-sysfs: BatteryManager oficial.
 
+Zonas que NAO sao termometros ficam de fora da agregacao: limiares de
+protecao (cpu-hw-trip-N, cujo temp apenas espelha trip_point_0_temp, ex.: 95 C
+constante) e limites de corrente de bateria (*-bcl-lvlN, *-ibat-lvlN, vbat).
+Continuam listadas em "Nos brutos" como UNKNOWN, mas nunca entram no hotspot,
+na media ou no grafico. Zonas de CPU no formato Qualcomm
+cpu-<cluster>-<nucleo>-<sub> ganham rotulo unico (ex.: CPU 0.2.1) e sao
+agrupadas por "Cluster N".
+
 ### Motor de leitura 1 Hz
 
 - Sessao root persistente via libsu: o shell nasce uma vez no processo;

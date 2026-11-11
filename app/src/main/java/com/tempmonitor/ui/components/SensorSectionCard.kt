@@ -178,12 +178,12 @@ private fun SectionDetail(summary: SectionSummary, batteryApiCelsius: Float?) {
                     modifier = Modifier.padding(top = 8.dp),
                 )
                 pairs.sortedBy { it.first.label }.forEach { (node, reading) ->
-                    DetailRow(node.label, formatTemp(reading.celsius), reading.celsius)
+                    DetailRow(node.label, formatTemp(reading.celsius), reading.celsius, subtitle = node.type)
                 }
             }
         } else {
             summary.readings.sortedBy { it.first.label }.forEach { (node, reading) ->
-                DetailRow(node.label + "  (" + node.type + ")", formatTemp(reading.celsius), reading.celsius)
+                DetailRow(node.label, formatTemp(reading.celsius), reading.celsius, subtitle = node.type)
             }
         }
 
@@ -199,9 +199,18 @@ private fun SectionDetail(summary: SectionSummary, batteryApiCelsius: Float?) {
 }
 
 @Composable
-private fun DetailRow(label: String, value: String, celsius: Float?) {
+private fun DetailRow(label: String, value: String, celsius: Float?, subtitle: String? = null) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            if (subtitle != null && subtitle != label) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
         Text(
             value,
             style = MaterialTheme.typography.bodyMedium,

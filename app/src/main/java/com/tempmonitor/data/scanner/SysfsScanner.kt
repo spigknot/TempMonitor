@@ -34,7 +34,8 @@ object ScanOutputParser {
                         category = category,
                         scale = TempScale.MILLIDEGREE,
                         label = SensorClassifier.friendlyLabel(type, category),
-                        cluster = SensorClassifier.clusterHint(type),
+                        cluster = SensorClassifier.clusterHint(type)
+                            ?: SensorClassifier.cpuZone(type)?.let { "Cluster " + it.cluster },
                     )
                 }
                 "PSF" -> {
@@ -68,27 +69,25 @@ object ScanOutputParser {
             }
         }
 
-        val cpuCores = nodes.values.filter {
-            it.category == SensorCategory.CPU && SensorClassifier.coreIndex(it.type) != null
-        }
-        val totalCores = cpuCores.size
+        val cpuZones = nodes.values.filter { it.category == SensorCategory.CPU }
+        val totalCores = cpuZones.count { SensorClassifier.coreIndex(it.type) != null }
         val result = nodes.values.map { node ->
             var n = node
             if (n.category == SensorCategory.CPU) {
-                val idx = SensorClassifier.coreIndex(n.type)
-                if (idx != null) {
-                    n = n.copy(
-                        label = "Core $idx",
-                        cluster = n.cluster ?: SensorClassifier.fallbackCluster(idx, totalCores),
-                    )
-                }
+                n = n.copy(
+                    label = SensorClassifier.friendlyLabel(n.type, SensorCategory.CPU),
+                    cluster = n.cluster ?: SensorClassifier.fallbackCluster(
+                        SensorClassifier.coreIndex(n.type), totalCores
+                    ),
+                )
             }
             overrides[n.id]?.let { forced ->
-                val coreIdx = SensorClassifier.coreIndex(n.type)
                 n = n.copy(
                     category = forced,
                     manuallyAssigned = true,
-                    label = if (forced == SensorCategory.CPU && coreIdx != null) "Core $coreIdx" else n.label,
+                    label = if (forced == SensorCategory.CPU)
+                        SensorClassifier.friendlyLabel(n.type, SensorCategory.CPU) else n.label,
+                    cluster = if (forced == SensorCategory.CPU) n.cluster ?: "Manual" else n.cluster,
                 )
             }
             n
