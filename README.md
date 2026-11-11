@@ -6,6 +6,8 @@ OnePlus Ace 2 Pro (Snapdragon 8 Gen 2), mas sem nenhum caminho de sensor
 hardcoded: o hardware e descoberto dinamicamente em sysfs, entao o mesmo APK
 se adapta a qualquer SoC moderno.
 
+![Icone do TempMonitor](docs/icon.png)
+
 ## Arquitetura
 
 Clean Architecture + MVVM com fluxo unidirecional (UDF):
