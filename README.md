@@ -86,9 +86,14 @@ a cada tick.
 
     ./gradlew :app:assembleDebug        # APK debug em app/build/outputs/apk/debug/
     ./gradlew :app:testDebugUnitTest    # testes unitarios (classifier, scaling, historico)
-    ./gradlew :app:assembleRelease      # release com minify (requer keystore proprio)
+    ./gradlew :app:assembleRelease      # release com minify + assinatura
 
 Crie um local.properties com sdk.dir=/caminho/do/android-sdk (nao versionado).
+
+**Publicar uma versao** (bump de versao, tag, release com APK anexado e checagem
+publica) segue o checklist T1-T9 de [UPDATE.md](UPDATE.md); a automacao esta em
+`scripts/release.sh` (`--dry-run` valida sem publicar). Sem `keystore.properties`,
+a release e assinada com a chave de debug — instalavel, mas nao serve para loja.
 
 ## Estrutura
 
