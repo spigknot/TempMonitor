@@ -124,7 +124,8 @@ ok "release $TAG criada com $(basename "$APK")"
 log "T9 — conferir download publico"
 URL="https://github.com/$OWNER/$REPO/releases/download/$TAG/$(basename "$APK")"
 HDRS=$(curl -sSIL "$URL")
-CODE=$(printf '%s' "$HDRS" | head -n1 | awk '{print $2}')
+# -L segue o redirect github.com -> CDN; o status final e o ULTIMO "HTTP/..."
+CODE=$(printf '%s' "$HDRS" | grep -i '^HTTP/' | tail -n1 | awk '{print $2}')
 LEN=$(printf '%s' "$HDRS" | grep -i '^content-length:' | tail -n1 | tr -dc '0-9')
 LOCAL_LEN=$(wc -c < "$APK" | tr -d ' ')
 [ "$CODE" = "200" ] || die "download retornou HTTP $CODE"

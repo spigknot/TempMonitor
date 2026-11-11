@@ -110,7 +110,8 @@ tamanho do arquivo local.
 curl -sSIL https://github.com/spigknot/TempMonitor/releases/download/vX.Y.Z/TempMonitor-X.Y.Z.apk | head -n 5
 ```
 
-**Pronto quando:** `HTTP 200` e `content-length` igual ao tamanho do APK gerado.
+**Pronto quando:** o **último** status for `HTTP 200` (o primeiro é `302` do github.com
+para o CDN — por isso o `-L`) e `content-length` igual ao tamanho do APK gerado.
 
 ---
 
