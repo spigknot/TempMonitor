@@ -21,3 +21,6 @@ keystore.properties
 out/
 *.log
 google-services.json
+
+# artefatos de release local
+dist/
