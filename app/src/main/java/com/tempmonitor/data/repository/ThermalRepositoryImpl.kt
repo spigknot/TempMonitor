@@ -43,6 +43,13 @@ class ThermalRepositoryImpl(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var loopJob: Job? = null
 
+    /**
+     * Assinantes do loop: a UI (ViewModel) e o Foreground Service.
+     * O loop so existe enquanto houver pelo menos um — parar o servico nao
+     * congela a tela aberta, e fechar a tela nao derruba a coleta em background.
+     */
+    private var subscribers = 0
+
     private val _state = MutableStateFlow(ThermalState(scanning = true))
     override val state: StateFlow<ThermalState> = _state.asStateFlow()
 
@@ -51,13 +58,26 @@ class ThermalRepositoryImpl(
 
     @Volatile private var nodes: List<ThermalNode> = emptyList()
 
+    @Synchronized
+    private fun subscribe(): Boolean {
+        subscribers++
+        return subscribers == 1
+    }
+
+    @Synchronized
+    private fun unsubscribe(): Boolean {
+        if (subscribers > 0) subscribers--
+        return subscribers == 0
+    }
+
     override suspend fun startMonitoring() {
-        if (loopJob?.isActive == true) return
+        if (!subscribe()) return
         ensureDiscovered()
         loopJob = scope.launch { runLoop() }
     }
 
     override fun stopMonitoring() {
+        if (!unsubscribe()) return
         loopJob?.cancel()
         loopJob = null
     }

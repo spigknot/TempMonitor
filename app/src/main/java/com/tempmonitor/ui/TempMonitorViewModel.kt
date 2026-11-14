@@ -49,6 +49,19 @@ class TempMonitorViewModel(
 
     init {
         viewModelScope.launch { container.thermalRepository.startMonitoring() }
+        // Se o usuario parar o servico pelo botao da notificacao, o switch
+        // da tela acompanha (fonte da verdade e o servico).
+        viewModelScope.launch {
+            ThermalMonitorService.running.collect { running ->
+                _uiLocal.value = _uiLocal.value.copy(backgroundEnabled = running)
+            }
+        }
+    }
+
+    override fun onCleared() {
+        // Libera a assinatura da UI; se o servico continuar ativo, a coleta segue.
+        container.thermalRepository.stopMonitoring()
+        super.onCleared()
     }
 
     fun onToggleExpand(category: SensorCategory) {
@@ -66,7 +79,7 @@ class TempMonitorViewModel(
     }
 
     fun onToggleBackground(enabled: Boolean) {
-        _uiLocal.value = _uiLocal.value.copy(backgroundEnabled = enabled)
+        _uiLocal.value = _uiLocal.value.copy(backgroundEnabled = enabled) // otimista; o servico confirma
         if (enabled) ThermalMonitorService.start(app) else ThermalMonitorService.stop(app)
     }
 

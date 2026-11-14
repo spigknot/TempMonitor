@@ -65,6 +65,11 @@ agrupadas por "Cluster N".
 - Faixas longas com tela desligada: ThermalMonitorService (foreground,
   notificacao de baixo impacto atualizada a cada 5 s), ligado pelo switch
   "Historico em segundo plano".
+  A notificacao resume os picos como `CPU: 53  GPU: 50  NPU: 49  BAT: 40` (graus
+  inteiros) e traz o botao **Parar**, que encerra o servico e a coleta em
+  segundo plano. O loop de leitura usa contagem de assinantes (UI + servico),
+  entao parar o servico nao congela a tela aberta, e fechar a tela nao derruba
+  a coleta em background.
 
 ### UI (tela unica)
 
