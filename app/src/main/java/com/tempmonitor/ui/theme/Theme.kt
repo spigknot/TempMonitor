@@ -27,6 +27,13 @@ fun tempColor(celsius: Float?): Color = when {
     else -> Color(0xFFEF5350)
 }
 
+/** Cor da barra de RAM por faixa de ocupacao (mesma paleta semantica das temperaturas). */
+fun ramColor(fraction: Float): Color = when {
+    fraction < 0.60f -> Color(0xFF66BB6A)
+    fraction < 0.85f -> Color(0xFFFFCA28)
+    else -> Color(0xFFEF5350)
+}
+
 fun formatTemp(celsius: Float?): String =
     if (celsius == null) "--.- C" else String.format(java.util.Locale.US, "%.1f C", celsius)
 

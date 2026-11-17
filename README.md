@@ -34,7 +34,8 @@ No primeiro uso (e a cada reescaneamento) um unico script de shell enumera:
 
 O mapeamento e cacheado em DataStore; arquivos de nos brutos podem ser
 reatribuidos manualmente na tela "Nos brutos" (o override vence a heuristica
-e sobrevive ao rescan). Unico fallback nao-sysfs: BatteryManager oficial.
+e sobrevive ao rescan). Unico fallback nao-sysfs para temperatura: BatteryManager
+oficial; a RAM da barra do topo vem de ActivityManager.MemoryInfo.
 
 Zonas que NAO sao termometros ficam de fora da agregacao: limiares de
 protecao (cpu-hw-trip-N, cujo temp apenas espelha trip_point_0_temp, ex.: 95 C
@@ -73,12 +74,14 @@ agrupadas por "Cluster N".
 
 ### UI (tela unica)
 
-Hero com o hotspot global do SoC (maior entre CPU/GPU) + media de CPU e
-bateria; quatro cards em acordeao (CPU, GPU, NPU, BATERIA) com pico,
-sparkline de 30 s e, ao expandir, todos os sensores (CPU agrupada por
-cluster), grafico completo e seletor 10s...1d. O detalhe so e composto
-quando o card esta expandido: cards colapsados nao recompoem nos invisiveis
-a cada tick.
+Barra de RAM no topo (total, usada e livre) alimentada pelo mesmo estado de
+1 Hz das temperaturas, sem timer proprio: ActivityManager.MemoryInfo, com
+fallback para /proc/meminfo. O antigo hero do pico global foi removido; o
+pico de cada categoria aparece no proprio card. Abaixo, quatro cards em
+acordeao (CPU, GPU, NPU, BATERIA) com pico, sparkline de 30 s e, ao expandir,
+todos os sensores (CPU agrupada por cluster), grafico completo e seletor
+10s...1d. O detalhe so e composto quando o card esta expandido: cards
+colapsados nao recompoem nos invisiveis a cada tick.
 
 ## Pre-requisitos
 
@@ -113,6 +116,7 @@ a release e assinada com a chave de debug — instalavel, mas nao serve para loj
       data/history/       ThermalHistoryStore (ring buffer + buckets)
       data/local/         SensorMappingStore (DataStore)
       data/battery/       BatteryReader (BatteryManager)
+      data/memory/        MemoryReader (RAM total/usada)
       data/repository/    ThermalRepositoryImpl (loop 1 Hz)
       service/            ThermalMonitorService (foreground)
       ui/                 TempMonitorScreen, TempMonitorViewModel, components/, theme/

@@ -24,12 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tempmonitor.domain.model.SensorCategory
-import com.tempmonitor.ui.components.HeroHeader
+import com.tempmonitor.ui.components.RamBar
 import com.tempmonitor.ui.components.RawNodesDialog
 import com.tempmonitor.ui.components.SensorSectionCard
 
 /**
- * Tela unica rolavel (single-screen): hero + 4 cards em acordeao + controles.
+ * Tela unica rolavel (single-screen): barra de RAM + 4 cards em acordeao + controles.
  * Cards colapsados nao compoem o detalhe; apenas o expandido le historico.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +49,7 @@ fun TempMonitorScreen(viewModel: TempMonitorViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item { HeroHeader(state = state) }
+            item { RamBar(ram = state.ram) }
 
             state.error?.let { error ->
                 item {
@@ -116,10 +116,16 @@ fun TempMonitorScreen(viewModel: TempMonitorViewModel) {
                         OutlinedButton(onClick = { viewModel.onShowRawNodes(true) }) { Text("Nos brutos") }
                     }
                     Text(
-                        "Sensores mapeados: " + state.nodes.size +
-                            "  |  Atualizacao: 1 Hz (shell root persistente)",
+                        "Sensores mapeados: " + state.nodes.size + "  |  Atualizacao: 1 Hz",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = if (state.rootGranted) "Root: concedido - leitura sysfs"
+                        else "Root: nao concedido - modo limitado (BatteryManager)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (state.rootGranted) MaterialTheme.colorScheme.secondary
+                        else MaterialTheme.colorScheme.error,
                     )
                 }
             }

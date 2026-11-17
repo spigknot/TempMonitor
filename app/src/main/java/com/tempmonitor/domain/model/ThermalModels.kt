@@ -39,6 +39,20 @@ data class SectionSummary(
     val extraHz: Long? = null,
 )
 
+/**
+ * Uso de memoria do sistema no instante da leitura.
+ * [usedBytes] segue a semantica do ActivityManager: total - memoria disponivel
+ * para novos processos (nao e o "MemFree" cru do /proc/meminfo).
+ */
+data class RamUsage(
+    val totalBytes: Long,
+    val usedBytes: Long,
+) {
+    val freeBytes: Long get() = (totalBytes - usedBytes).coerceAtLeast(0L)
+    val usedFraction: Float
+        get() = if (totalBytes <= 0L) 0f else (usedBytes.toFloat() / totalBytes).coerceIn(0f, 1f)
+}
+
 data class ThermalState(
     val timestampMs: Long = 0L,
     val rootGranted: Boolean = false,
@@ -51,6 +65,7 @@ data class ThermalState(
     val cpuAvgCelsius: Float? = null,
     val batteryCelsius: Float? = null,
     val batteryApiCelsius: Float? = null,
+    val ram: RamUsage? = null,
     val error: String? = null,
 ) {
     fun section(category: SensorCategory): SectionSummary? = sections[category]

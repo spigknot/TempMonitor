@@ -3,6 +3,7 @@ package com.tempmonitor.data.repository
 import com.tempmonitor.data.battery.BatteryReader
 import com.tempmonitor.data.history.ThermalHistoryStore
 import com.tempmonitor.data.local.SensorMappingStore
+import com.tempmonitor.data.memory.MemoryReader
 import com.tempmonitor.data.scanner.SysfsScanner
 import com.tempmonitor.data.scanner.TempScaling
 import com.tempmonitor.data.shell.RootShellExecutor
@@ -37,6 +38,7 @@ class ThermalRepositoryImpl(
     private val scanner: SysfsScanner,
     private val store: SensorMappingStore,
     private val batteryReader: BatteryReader,
+    private val memoryReader: MemoryReader,
     private val history: ThermalHistoryStore = ThermalHistoryStore(),
 ) : ThermalRepository {
 
@@ -135,6 +137,8 @@ class ThermalRepositoryImpl(
     private suspend fun tick(nowMs: Long) {
         val root = shell.isRootGranted()
         val batteryApi = batteryReader.packTemperatureCelsius()
+        // RAM sai do mesmo tick de 1 Hz das temperaturas: nenhum timer extra.
+        val ram = memoryReader.ramUsage()
 
         if (!root) {
             _state.value = ThermalState(
@@ -144,6 +148,7 @@ class ThermalRepositoryImpl(
                 nodes = nodes,
                 batteryApiCelsius = batteryApi,
                 batteryCelsius = batteryApi,
+                ram = ram,
                 sections = batteryOnlySection(batteryApi),
                 error = "Root nao concedido. Conceda acesso no Magisk/KernelSU/APatch; " +
                     "sem root, apenas a temperatura oficial da bateria esta disponivel.",
@@ -188,6 +193,7 @@ class ThermalRepositoryImpl(
             cpuAvgCelsius = sections[SensorCategory.CPU]?.avgCelsius,
             batteryCelsius = sections[SensorCategory.BATTERY]?.peakCelsius ?: batteryApi,
             batteryApiCelsius = batteryApi,
+            ram = ram,
         )
     }
 
